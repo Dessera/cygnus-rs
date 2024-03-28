@@ -2,6 +2,7 @@ use aes_gcm::{
   aead::{Aead, AeadCore, KeyInit, OsRng},
   Aes256Gcm, Key, Nonce,
 };
+use serde::{Deserialize, Serialize};
 use thiserror;
 use tokio::io::{self as async_io, AsyncReadExt};
 use tokio::{fs as async_fs, io::AsyncWriteExt};
@@ -18,7 +19,7 @@ pub enum PasswordStoreError {
   Utf8Error(#[from] std::string::FromUtf8Error),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PasswordStoreConfig {
   pub store_path: String,
   pub save_password: bool,
