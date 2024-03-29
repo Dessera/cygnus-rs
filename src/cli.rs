@@ -1,9 +1,9 @@
 use clap::{Parser, Subcommand, ValueEnum};
 
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 pub struct Cli {
   #[command(subcommand)]
-  command: Command,
+  pub command: Command,
 
   /// Log level
   #[arg(value_enum, short, long, default_value = "info")]
@@ -15,7 +15,7 @@ pub struct Cli {
   pub config: String,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum LogLevel {
   Trace,
   Debug,
@@ -36,8 +36,8 @@ impl Into<tracing::Level> for LogLevel {
   }
 }
 
-#[derive(Subcommand)]
-enum Command {
+#[derive(Subcommand, Debug)]
+pub enum Command {
   /// Run the authentication client
   Auth {},
 }

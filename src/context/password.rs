@@ -4,8 +4,11 @@ use aes_gcm::{
 };
 use serde::{Deserialize, Serialize};
 use thiserror;
-use tokio::io::{self as async_io, AsyncReadExt};
-use tokio::{fs as async_fs, io::AsyncWriteExt};
+use tokio::{
+  fs::File,
+  io::{AsyncReadExt, BufReader, BufWriter},
+};
+use tokio::{fs::OpenOptions, io::AsyncWriteExt};
 
 #[derive(thiserror::Error, Debug)]
 pub enum PasswordStoreError {
@@ -19,13 +22,13 @@ pub enum PasswordStoreError {
   Utf8Error(#[from] std::string::FromUtf8Error),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct PasswordStoreConfig {
   pub store_path: String,
   pub save_password: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct PasswordStore {
   config: PasswordStoreConfig,
 }
@@ -36,9 +39,9 @@ impl PasswordStore {
   }
 
   pub async fn load_password(&self) -> Result<String, PasswordStoreError> {
-    let file = async_fs::File::open(&self.config.store_path).await?;
+    let file = File::open(&self.config.store_path).await?;
 
-    let mut reader = async_io::BufReader::new(file);
+    let mut reader = BufReader::new(file);
 
     let mut nonce = Nonce::default();
     reader.read_exact(nonce.as_mut()).await?;
@@ -72,13 +75,13 @@ impl PasswordStore {
     let encrypted_password =
       cipher.encrypt(&nonce, password.as_bytes().as_ref())?;
 
-    let file = async_fs::OpenOptions::new()
+    let file = OpenOptions::new()
       .write(true)
       .create(true)
       .open(&self.config.store_path)
       .await?;
 
-    let mut writer = async_io::BufWriter::new(file);
+    let mut writer = BufWriter::new(file);
 
     writer.write_all(nonce.as_ref()).await?;
     writer.write_all(key.as_slice()).await?;
@@ -93,6 +96,7 @@ impl PasswordStore {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use tokio::fs::remove_file;
 
   #[tokio::test]
   #[ignore = "not a standalone test"]
@@ -133,6 +137,6 @@ mod tests {
     assert_eq!(store.load_password().await.unwrap(), "password");
 
     // rm the file
-    async_fs::remove_file("jlud.passwd").await.unwrap();
+    remove_file("jlud.passwd").await.unwrap();
   }
 }
