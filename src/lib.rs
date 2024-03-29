@@ -10,8 +10,6 @@ use context::{Context, ContextConfig};
 use tokio::sync::Mutex;
 use tracing::{event, Level};
 
-use crate::component::{runtime::RetryGuard, Component};
-
 #[derive(thiserror::Error, Debug)]
 pub enum AppError {
   #[error("{0}")]
