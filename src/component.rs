@@ -1,17 +1,14 @@
-pub mod connection;
-pub mod control_flow;
-
 use std::{error::Error, sync::Arc};
 use tokio::sync::Mutex;
 
-use crate::context::Context;
+use crate::{context::Context, error::JludError};
 
-pub trait Component<E>
+pub trait Component<E = JludError>
 where
   E: Error,
 {
   fn run(
-    &self,
+    &mut self,
     context: Arc<Mutex<Context>>,
   ) -> impl std::future::Future<Output = Result<(), E>> + Send
   where

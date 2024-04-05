@@ -15,6 +15,11 @@ clap = { version = "4.5.4", features = ["derive"] }
 dirs = "5.0.1"
 dotenv = "0.15.0"
 dotenv_codegen = "0.15.0"
+hostname = "0.4.0"
+md5 = "0.7.0"
+pnet = "0.34.0"
+rand = "0.8.5"
+rpassword = "7.3.1"
 serde = { version = "1.0.197", features = ["derive"] }
 thiserror = "1.0.58"
 tokio = { version = "1.36.0", features = [

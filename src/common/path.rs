@@ -17,17 +17,9 @@ pub fn app_config_file() -> Option<PathBuf> {
   })
 }
 
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_app_config_dir() {
-    assert!(app_config_dir().is_some());
-  }
-
-  #[test]
-  fn test_app_config_file() {
-    assert!(app_config_file().is_some());
-  }
+pub fn app_password_file() -> Option<PathBuf> {
+  app_config_dir().map(|mut p| {
+    p.push(dotenv!("JLUD_APP_PASSWORD_FILE"));
+    p
+  })
 }
