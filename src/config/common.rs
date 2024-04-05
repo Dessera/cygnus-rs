@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct CommonConfig {
   /// Set retry times, None means infinite
   #[serde(default)]
-  pub retry: Option<u64>,
+  pub retry: Option<i32>,
 
   /// Set retry interval in seconds
   #[serde(default = "CommonConfig::default_retry_interval")]

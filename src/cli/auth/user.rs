@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use tokio::sync::Mutex;
-use tracing::warn;
+use tracing::{info, warn};
 
 use crate::{
   component::Component,
@@ -38,6 +38,10 @@ impl Component for UserInfoCollector {
     } else {
       // prompt user for info
       user_ctx.read_user_info_from_prompt()?;
+    }
+
+    if let Some(ref username) = user_ctx.username {
+      info!("User {:?} info collected", username);
     }
 
     Ok(())

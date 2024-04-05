@@ -9,7 +9,9 @@ use clap::Parser;
 use tokio::sync::Mutex;
 
 use crate::{
-  common::components::InfiniteGuard, component::Component, context::Context,
+  common::components::{InfiniteGuard, RetryGuard},
+  component::Component,
+  context::Context,
   error::JludResult,
 };
 
@@ -19,9 +21,24 @@ use self::{
 };
 
 #[derive(Parser, Debug)]
-pub struct Auth {}
+pub struct Auth;
 
 impl Component for Auth {
+  async fn run(&mut self, context: Arc<Mutex<Context>>) -> JludResult<()> {
+    let (max_retries, interval) = {
+      let ctx = context.lock().await;
+      (ctx.common.config.retry, ctx.common.config.retry_interval)
+    };
+    RetryGuard::new(max_retries, interval, AuthImpl {})
+      .run(context)
+      .await
+  }
+}
+
+#[derive(Debug)]
+pub struct AuthImpl;
+
+impl Component for AuthImpl {
   async fn run(&mut self, context: Arc<Mutex<Context>>) -> JludResult<()> {
     UserInfoCollector::new().run(context.clone()).await?;
 
