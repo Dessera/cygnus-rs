@@ -2,6 +2,8 @@ pub mod common;
 pub mod interface;
 pub mod user;
 
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 use tokio::{fs::File, io::AsyncReadExt};
 
@@ -28,7 +30,7 @@ pub struct Config {
 }
 
 impl Config {
-  pub async fn try_from_file(path: &str) -> JludResult<Self> {
+  pub async fn try_from_file(path: &PathBuf) -> JludResult<Self> {
     let mut file = File::open(path).await?;
     let mut contents = String::new();
     file.read_to_string(&mut contents).await?;

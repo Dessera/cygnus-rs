@@ -19,10 +19,13 @@ pub struct Cli {
   #[arg(value_enum, short, long, default_value = "info")]
   pub log_level: LogLevel,
 
-  // default to app default config directory
   /// Specify the path to the configuration file
   #[arg(short, long)]
   pub config: Option<String>,
+
+  /// Specify the path to the user data file (No effect when save_user is false)
+  #[arg(short, long)]
+  pub user: Option<String>,
 }
 
 #[derive(Subcommand, Debug)]

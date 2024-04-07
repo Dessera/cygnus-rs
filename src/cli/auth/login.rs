@@ -3,7 +3,7 @@ use std::sync::Arc;
 use pnet::datalink;
 use rand::random;
 use tokio::sync::Mutex;
-use tracing::{error, info, warn};
+use tracing::{error, info};
 
 use crate::{
   common::{
@@ -172,28 +172,14 @@ impl LoginSender {
 }
 
 impl Component for LoginSender {
-  #[tracing::instrument(skip_all)]
+  #[tracing::instrument(skip_all, name = "login_sender")]
   async fn run(&mut self, context: Arc<Mutex<Context>>) -> JludResult<()> {
     let mut ctx = context.lock().await;
 
-    info!("Sending login request");
+    info!("Starting login");
 
-    let username_opt = ctx.user.username.clone();
-    let username = match username_opt {
-      Some(username) => username,
-      None => {
-        error!("Username is not set");
-        return Err(JludError::MissingField("username".to_string()));
-      }
-    };
-    let password_opt = ctx.user.password.clone();
-    let password = match password_opt {
-      Some(password) => password,
-      None => {
-        error!("Password is not set");
-        return Err(JludError::MissingField("password".to_string()));
-      }
-    };
+    let username = ctx.user.username.clone();
+    let password = ctx.user.password.clone();
     let interface = ctx.interface.config.interface.clone();
     let interfaces = datalink::interfaces();
     let target = interfaces

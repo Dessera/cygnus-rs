@@ -3,11 +3,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::{info, warn};
 
-use crate::{
-  component::Component,
-  context::Context,
-  error::{JludError, JludResult},
-};
+use crate::{component::Component, context::Context, error::JludResult};
 
 #[derive(Debug)]
 pub struct UserInfoCollector;
@@ -19,30 +15,31 @@ impl UserInfoCollector {
 }
 
 impl Component for UserInfoCollector {
+  #[tracing::instrument(skip_all, name = "user_info_collector")]
   async fn run(&mut self, context: Arc<Mutex<Context>>) -> JludResult<()> {
-    let user_ctx = &mut context.lock().await.user;
-    if user_ctx.config.save_user {
-      // read user info from config file
-      match user_ctx.load_from_config().await {
-        Ok(_) => {}
-        Err(e) => match e {
-          JludError::Io(_) => {
-            // prompt user for info
-            warn!("Could not read user info from config file, prompting user for info");
-            user_ctx.read_user_info_from_prompt()?;
-            user_ctx.save_to_config().await?;
-          }
-          _ => return Err(e),
-        },
+    let ctx = &mut context.lock().await;
+    let user_path = ctx.path.user.clone();
+
+    info!("Starting user info collection");
+
+    if ctx.user.config.save_user {
+      info!("Loading user info from passwd file");
+      if let Err(e) = ctx.user.load_from_config(&user_path).await {
+        warn!(
+          "Could not read user info from config file: {}, prompting user for info", e
+        );
+        ctx.user.read_user_info_from_prompt()?;
+        if let Err(e) = ctx.user.save_to_config(&user_path).await {
+          warn!("Failed to save user info to user file: {}", e);
+        }
       }
     } else {
       // prompt user for info
-      user_ctx.read_user_info_from_prompt()?;
+      info!("Prompting user for info");
+      ctx.user.read_user_info_from_prompt()?;
     }
 
-    if let Some(ref username) = user_ctx.username {
-      info!("User {:?} info collected", username);
-    }
+    info!("User {:?} info collected", ctx.user.username);
 
     Ok(())
   }

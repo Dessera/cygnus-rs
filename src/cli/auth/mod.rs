@@ -16,7 +16,7 @@ use crate::{
 };
 
 use self::{
-  challenge::Challenger, keep_alive::KeepAliveSender, login::LoginSender,
+  challenge::ChallengeSender, keep_alive::KeepAliveSender, login::LoginSender,
   user::UserInfoCollector,
 };
 
@@ -29,7 +29,7 @@ impl Component for Auth {
       let ctx = context.lock().await;
       (ctx.common.config.retry, ctx.common.config.retry_interval)
     };
-    RetryGuard::new(max_retries, interval, AuthImpl {})
+    RetryGuard::new(max_retries, interval, AuthImpl::new())
       .run(context)
       .await
   }
@@ -38,13 +38,18 @@ impl Component for Auth {
 #[derive(Debug)]
 pub struct AuthImpl;
 
+impl AuthImpl {
+  pub fn new() -> Self {
+    Self {}
+  }
+}
+
 impl Component for AuthImpl {
   async fn run(&mut self, context: Arc<Mutex<Context>>) -> JludResult<()> {
     UserInfoCollector::new().run(context.clone()).await?;
 
-    Challenger::new().run(context.clone()).await?;
+    ChallengeSender::new().run(context.clone()).await?;
     LoginSender::new().run(context.clone()).await?;
-
     InfiniteGuard::new(20, KeepAliveSender::new())
       .run(context.clone())
       .await

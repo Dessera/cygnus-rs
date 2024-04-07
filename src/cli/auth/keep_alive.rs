@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use rand::random;
 use tokio::sync::Mutex;
-use tracing::{error, info, warn};
+use tracing::info;
 
 use crate::{
   common::data::crc, component::Component, context::Context, error::JludResult,
@@ -89,7 +89,7 @@ impl KeepAliveSender {
 }
 
 impl Component for KeepAliveSender {
-  #[tracing::instrument(skip_all)]
+  #[tracing::instrument(skip_all, name = "keep_alive_sender")]
   async fn run(&mut self, context: Arc<Mutex<Context>>) -> JludResult<()> {
     let mut ctx = context.lock().await;
 
