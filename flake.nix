@@ -35,11 +35,11 @@
         nixosModules = {
           default = { config, lib, ... }:
             let
-              cfg = config.modules.services.cygnus;
+              cfg = config.modules.services.cygnus-rs;
               inherit (lib) mkOption mkEnableOption mkIf types;
             in
             {
-              options.modules.services.cygnus = {
+              options.modules.services.cygnus-rs = {
                 enable = mkEnableOption "Enable JLU Network Auth Service";
                 userFile = mkOption {
                   type = types.str;
@@ -52,7 +52,7 @@
                   self.packages.default
                 ];
 
-                systemd.services.cygnus-auth = {
+                systemd.services.cygnus-rs = {
                   description = "JLU Network Auth Service";
                   enable = true;
                   after = [ "network.target" ];
