@@ -63,7 +63,7 @@
                   wantedBy = [ "multi-user.target" ];
                   serviceConfig = {
                     Type = "simple";
-                    ExecStart = "${cygnus-rs}/bin/cygnus -f ${cfg.userFile}";
+                    ExecStart = "${cygnus-rs}/bin/cygnus auth -f ${cfg.userFile}";
                     Restart = "always";
                     RestartSec = 5;
                   };
