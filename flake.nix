@@ -34,7 +34,7 @@
             let
               cfg = config.modules.services.cygnus-rs;
               system = pkgs.system;
-              cygnus-rs = self.packages.${system}.cygnus-rs;
+              cygnus-rs = self.packages.${system}.default;
               inherit (lib)
                 mkOption
                 mkEnableOption
