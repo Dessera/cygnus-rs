@@ -25,9 +25,16 @@
       flake = {
         nixosModules = {
           default =
-            { config, lib, ... }:
+            {
+              config,
+              lib,
+              pkgs,
+              ...
+            }:
             let
               cfg = config.modules.services.cygnus-rs;
+              system = pkgs.system;
+              cygnus-rs = self.packages.${system}.cygnus-rs;
               inherit (lib)
                 mkOption
                 mkEnableOption
@@ -46,7 +53,7 @@
 
               config = mkIf cfg.enable {
                 environment.systemPackages = [
-                  self.packages.default
+                  cygnus-rs
                 ];
 
                 systemd.services.cygnus-rs = {
@@ -56,7 +63,7 @@
                   wantedBy = [ "multi-user.target" ];
                   serviceConfig = {
                     Type = "simple";
-                    ExecStart = "${self.packages.default}/bin/cygnus -f ${cfg.userFile}";
+                    ExecStart = "${cygnus-rs}/bin/cygnus -f ${cfg.userFile}";
                     Restart = "always";
                     RestartSec = 5;
                   };
