@@ -14,9 +14,12 @@ pub struct DrContext {
 }
 
 impl DrContext {
-  pub fn try_new(user: User) -> AuthResult<Self> {
+  pub fn try_new(user: User, timeout: u64) -> AuthResult<Self> {
     let client = UdpSocket::bind("0.0.0.0:0")?;
+    let timeout = std::time::Duration::from_secs(timeout);
     client.connect("10.100.61.3:61440")?;
+    client.set_read_timeout(Some(timeout))?;
+    client.set_write_timeout(Some(timeout))?;
     let data = DrContextData::default();
 
     Ok(Self { client, data, user })

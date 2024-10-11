@@ -17,9 +17,9 @@ fn main() {
       });
     }
     ArgsCommand::Auth(auth_args) => {
-      let subscriber = FmtSubscriber::builder()
-        .with_max_level(Level::INFO)
-        .finish();
+      let log_level: Level = auth_args.log_level.clone().into();
+      let subscriber =
+        FmtSubscriber::builder().with_max_level(log_level).finish();
       tracing::subscriber::set_global_default(subscriber).unwrap_or_else(|e| {
         eprintln!("Failed to set default subscriber: {}", e);
         eprintln!("App will continue without logging");

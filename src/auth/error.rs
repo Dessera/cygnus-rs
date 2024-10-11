@@ -11,6 +11,9 @@ pub enum AuthError {
   #[error("Challenge max tries exceeded")]
   ChallengeMaxTriesExceeded,
 
+  #[error("App max tries exceeded")]
+  AppMaxTriesExceeded,
+
   #[error("Invalid MAC address")]
   InvalidMacAddress,
 

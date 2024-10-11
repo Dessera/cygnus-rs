@@ -21,14 +21,36 @@ pub fn auth_command_resolver(args: AuthArgs) -> AuthResult<()> {
   let user = UserCipher::decrypt(fd)?;
   info!("Target user: {}", user.username);
 
-  let mut ctx = DrContext::try_new(user)?;
+  let mut ctx = DrContext::try_new(user, args.timeout)?;
   info!("Starting authentication process");
 
-  challenge(&mut ctx)?;
-  login(&mut ctx)?;
-  keep_alive(&mut ctx)?;
+  let mut retry_times = args.retry;
+  loop {
+    match resolver_impl(&mut ctx) {
+      Ok(_) => {
+        error!("Unknown error, the program should not reach here");
+      }
+      Err(e) => {
+        error!("Authentication failed: {}", e);
+      }
+    }
+    if let Some(retry) = retry_times {
+      if retry == 0 {
+        error!("App max tries exceeded");
+        return Err(AuthError::AppMaxTriesExceeded);
+      }
+      retry_times = Some(retry - 1);
+    }
+    info!("Retrying in {} milliseconds", args.delay);
+    std::thread::sleep(std::time::Duration::from_millis(args.delay));
+  }
+}
 
-  Ok(())
+#[tracing::instrument(skip_all, name = "run")]
+fn resolver_impl(ctx: &mut DrContext) -> AuthResult<()> {
+  challenge(ctx)?;
+  login(ctx)?;
+  keep_alive(ctx)
 }
 
 #[tracing::instrument(skip_all)]
