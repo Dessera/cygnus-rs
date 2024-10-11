@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     crane.url = "github:ipetkov/crane";
-    flake-utils.url = "github:numtide/flake-utils";
+    flake-parts.url = "github:hercules-ci/flake-parts";
 
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -10,33 +10,30 @@
     };
   };
 
-  outputs = { self, nixpkgs, crane, flake-utils, rust-overlay, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ (import rust-overlay) ];
-        };
-        rustTools = (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml).override {
-          extensions = [ "rust-src" "rust-analyzer" ];
-        };
-        craneLib = (crane.mkLib pkgs).overrideToolchain (_: rustTools);
-      in
-      rec {
-        packages.default = craneLib.buildPackage {
-          src = craneLib.cleanCargoSource ./.;
-
-          # Add extra inputs here or any other derivation settings
-          # doCheck = true;
-          # buildInputs = [];
-          # nativeBuildInputs = [];
-        };
-
+  outputs =
+    {
+      self,
+      nixpkgs,
+      crane,
+      flake-utils,
+      flake-parts,
+      rust-overlay,
+      ...
+    }@inputs:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [ "x86_64-linux" ];
+      flake = {
         nixosModules = {
-          default = { config, lib, ... }:
+          default =
+            { config, lib, ... }:
             let
               cfg = config.modules.services.cygnus-rs;
-              inherit (lib) mkOption mkEnableOption mkIf types;
+              inherit (lib)
+                mkOption
+                mkEnableOption
+                mkIf
+                types
+                ;
             in
             {
               options.modules.services.cygnus-rs = {
@@ -68,8 +65,44 @@
             };
         };
 
-        devShells.default = craneLib.devShell {
-          packages = with pkgs; [ nil nixpkgs-fmt ];
+      };
+      perSystem =
+        {
+          config,
+          pkgs,
+          system,
+          ...
+        }:
+        let
+          rustTools = (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml).override {
+            extensions = [
+              "rust-src"
+              "rust-analyzer"
+            ];
+          };
+          craneLib = (crane.mkLib pkgs).overrideToolchain (_: rustTools);
+        in
+        {
+          packages.default = craneLib.buildPackage {
+            src = craneLib.cleanCargoSource ./.;
+
+            # Add extra inputs here or any other derivation settings
+            # doCheck = true;
+            # buildInputs = [];
+            # nativeBuildInputs = [];
+          };
+
+          devShells.default = craneLib.devShell {
+            packages = with pkgs; [
+              nil
+              nixfmt-rfc-style
+            ];
+          };
+
+          _module.args.pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ (import rust-overlay) ];
+          };
         };
-      });
+    };
 }
