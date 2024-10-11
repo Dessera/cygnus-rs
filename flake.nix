@@ -46,7 +46,7 @@
               options.modules.services.cygnus-rs = {
                 enable = mkEnableOption "Enable JLU Network Auth Service";
                 userFile = mkOption {
-                  type = types.str;
+                  type = types.path;
                   description = "Path to the user file";
                 };
               };
