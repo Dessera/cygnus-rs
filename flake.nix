@@ -40,18 +40,17 @@
           craneLibDefault = (crane.mkLib pkgs).overrideToolchain (
             import ./nix/toolchain { inherit fenix system; }
           );
-          craneLibWindows = (crane.mkLib pkgs).overrideToolchain (
-            import ./nix/toolchain/windows.nix { inherit fenix system; }
+          craneLibCross = (crane.mkLib pkgs).overrideToolchain (
+            import ./nix/toolchain/cross.nix { inherit fenix system; }
           );
         in
         {
           packages.default = craneLibDefault.buildPackage {
             src = craneLibDefault.cleanCargoSource ./.;
-
             strictDeps = true;
           };
-          packages.windows = craneLibWindows.buildPackage {
-            src = craneLibWindows.cleanCargoSource ./.;
+          packages.windows = craneLibCross.buildPackage {
+            src = craneLibCross.cleanCargoSource ./.;
 
             strictDeps = true;
             doCheck = false;
@@ -70,6 +69,14 @@
               pkgsCross.mingwW64.stdenv.cc
               pkgsCross.mingwW64.windows.pthreads
             ];
+          };
+          packages.linux-musl = craneLibCross.buildPackage {
+            src = craneLibCross.cleanCargoSource ./.;
+
+            strictDeps = true;
+
+            CARGO_BUILD_TARGET = "x86_64-unknown-linux-musl";
+            CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
           };
 
           devShells.default = craneLibDefault.devShell {
