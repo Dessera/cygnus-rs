@@ -19,13 +19,15 @@
       fenix,
       ...
     }@inputs:
+    let
+      osModule = import ./nix/modules/nixos.nix { cygnus-packages = self.packages; };
+    in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" ];
       flake = {
         nixosModules = {
-          default = import ./nix/modules/nixos.nix { cygnus-packages = self.packages; };
+          default = osModule;
         };
-
       };
       perSystem =
         {
@@ -35,14 +37,6 @@
           ...
         }:
         let
-          # toolchain =
-          #   with fenix.packages.${system};
-          #   combine [
-          #     minimal.rustc
-          #     minimal.cargo
-          #     targets.x86_64-pc-windows-gnu.stable.rust-std
-          #     targets.x86_64-unknown-linux-gnu.stable.rust-std
-          #   ];
           toolchain = fenix.packages.${system}.stable.withComponents [
             "cargo"
             "rustc"
