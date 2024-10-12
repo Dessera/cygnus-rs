@@ -138,7 +138,6 @@ fn keep_alive(ctx: &mut DrContext) -> AuthResult<()> {
 
     let mut send_buf_38 = [0; 38];
     let mut send_buf_40 = [0; 40];
-
     let mut recv_buf = [0; 300];
 
     ctx.get_keep_alive_data_38(&mut send_buf_38);
@@ -159,7 +158,6 @@ fn keep_alive(ctx: &mut DrContext) -> AuthResult<()> {
     }
 
     let mut recv_buf = [0; 300];
-
     ctx.get_keep_alive_data_40(
       AliveType::FIRST,
       keep_40_count,
@@ -172,7 +170,6 @@ fn keep_alive(ctx: &mut DrContext) -> AuthResult<()> {
     info!("Keep alive first accepted");
 
     let mut recv_buf = [0; 300];
-
     ctx.get_keep_alive_data_40(
       AliveType::SECOND,
       keep_40_count,
