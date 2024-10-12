@@ -59,10 +59,12 @@ fn challenge(ctx: &mut DrContext) -> AuthResult<()> {
 
   info!("Starting challenge");
 
-  let mut send_buf = [0; 20];
-  let mut recv_buf = [0; 32];
   for try_times in 0..5 {
     info!("Challenge try: {}", try_times + 1);
+
+    let mut send_buf = [0; 20];
+    let mut recv_buf = [0; 200];
+
     ctx.get_challenge_data(try_times, &mut send_buf);
 
     match client.send(&send_buf) {
@@ -98,7 +100,7 @@ fn login(ctx: &mut DrContext) -> AuthResult<()> {
   info!("Starting login,target user: {}", ctx.user.username);
 
   let mut send_buf = vec![0; 400];
-  let mut recv_buf = [0; 48];
+  let mut recv_buf = [0; 200];
 
   ctx.get_login_data(&mut send_buf);
   ctx.client.send(&send_buf)?;
@@ -125,14 +127,19 @@ fn login(ctx: &mut DrContext) -> AuthResult<()> {
 fn keep_alive(ctx: &mut DrContext) -> AuthResult<()> {
   info!("Starting keep alive");
 
-  let mut send_buf_38 = [0; 38];
-  let mut send_buf_40 = [0; 40];
+  // let mut send_buf_38 = [0; 38];
+  // let mut send_buf_40 = [0; 40];
 
-  let mut recv_buf = [0; 32];
+  // let mut recv_buf = [0; 32];
   let mut keep_40_count = 0u8;
 
   loop {
     info!("Sending keep alive data");
+
+    let mut send_buf_38 = [0; 38];
+    let mut send_buf_40 = [0; 40];
+
+    let mut recv_buf = [0; 300];
 
     ctx.get_keep_alive_data_38(&mut send_buf_38);
     ctx.client.send(&send_buf_38)?;
@@ -140,6 +147,7 @@ fn keep_alive(ctx: &mut DrContext) -> AuthResult<()> {
     ctx.data.keep_alive_version = (recv_buf[28], recv_buf[29]);
 
     if keep_40_count % 21 == 0 {
+      let mut recv_buf = [0; 300];
       ctx.get_keep_alive_data_40(
         AliveType::EXTRA,
         keep_40_count,
@@ -149,6 +157,8 @@ fn keep_alive(ctx: &mut DrContext) -> AuthResult<()> {
       ctx.client.recv(&mut recv_buf)?;
       info!("Keep alive extra accepted");
     }
+
+    let mut recv_buf = [0; 300];
 
     ctx.get_keep_alive_data_40(
       AliveType::FIRST,
@@ -160,6 +170,8 @@ fn keep_alive(ctx: &mut DrContext) -> AuthResult<()> {
     ctx.data.tail_2.copy_from_slice(&recv_buf[16..20]);
     keep_40_count = keep_40_count.wrapping_add(1);
     info!("Keep alive first accepted");
+
+    let mut recv_buf = [0; 300];
 
     ctx.get_keep_alive_data_40(
       AliveType::SECOND,
