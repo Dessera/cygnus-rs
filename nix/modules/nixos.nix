@@ -7,7 +7,7 @@
 }:
 let
   cfg = config.modules.services.cygnus-rs;
-  cygnus-rs = cygnus-packages.packages.${pkgs.system}.default;
+  cygnus-rs = cygnus-packages.${pkgs.system}.default;
   inherit (lib)
     mkOption
     mkEnableOption
