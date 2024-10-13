@@ -15,17 +15,11 @@ use crate::user::cipher::UserCipher;
 
 #[tracing::instrument(skip_all, name = "auth")]
 pub fn auth_command_resolver(args: AuthArgs) -> AuthResult<()> {
-  let fd = OpenOptions::new().read(true).open(&args.file)?;
-  info!("Reading user data from file: {}", args.file);
-
-  let user = UserCipher::decrypt(fd)?;
-  info!("Target user: {}", user.username);
-
-  let mut ctx = DrContext::try_new(user, args.timeout)?;
-  info!("Starting authentication process");
-
   let mut retry_times = args.retry;
   loop {
+    let mut ctx = create_context(&args.file, args.timeout)?;
+    info!("Starting authentication process");
+
     match resolver_impl(&mut ctx) {
       Ok(_) => {
         error!("Unknown error, the program should not reach here");
@@ -44,6 +38,17 @@ pub fn auth_command_resolver(args: AuthArgs) -> AuthResult<()> {
     info!("Retrying in {} milliseconds", args.delay);
     std::thread::sleep(std::time::Duration::from_millis(args.delay));
   }
+}
+
+#[tracing::instrument(skip_all, name = "context")]
+fn create_context(file: &str, timeout: u64) -> AuthResult<DrContext> {
+  let fd = OpenOptions::new().read(true).open(file)?;
+  info!("Reading user data from file: {}", file);
+
+  let user = UserCipher::decrypt(fd)?;
+  info!("Target user: {}", user.username);
+
+  DrContext::try_new(user, timeout)
 }
 
 #[tracing::instrument(skip_all, name = "run")]
