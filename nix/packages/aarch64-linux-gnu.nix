@@ -4,10 +4,11 @@
   openssl,
   pkg-config,
   craneLib,
+  craneSrc,
   stdenv,
 }:
 craneLib.buildPackage {
-  src = craneLib.cleanCargoSource ./.;
+  src = craneLib.cleanCargoSource craneSrc;
 
   nativeBuildInputs =
     [
@@ -23,8 +24,8 @@ craneLib.buildPackage {
   ];
 
   strictDeps = true;
-  CARGO_BUILD_TARGET = "aarch64-unknown-linux-musl";
-  CARGO_BUILD_RUSTFLAGS = "-C target-feature=+crt-static";
+  doCheck = false;
+  CARGO_BUILD_TARGET = "aarch64-unknown-linux-gnu";
 
   CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${stdenv.cc.targetPrefix}cc";
 
