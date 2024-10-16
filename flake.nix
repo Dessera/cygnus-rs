@@ -70,7 +70,18 @@
               pkgsCross.mingwW64.windows.pthreads
             ];
           };
-          packages.linux-musl = craneLibCross.buildPackage {
+          packages.aarch64-linux-musl =
+            let
+              crossPkgs = import nixpkgs {
+                crossSystem = "aarch64-linux";
+                localSystem = system;
+              };
+            in
+            crossPkgs.callPackage ./nix/packages/aarch64-linux-musl.nix {
+              stdenv = crossPkgs.stdenv;
+              craneLib = craneLibCross;
+            };
+          packages.x86_64-linux-musl = craneLibCross.buildPackage {
             src = craneLibCross.cleanCargoSource ./.;
 
             strictDeps = true;
@@ -81,7 +92,7 @@
 
           devShells.default = craneLibDefault.devShell {
             packages = with pkgs; [
-              nil
+              nixd
               nixfmt-rfc-style
             ];
           };
