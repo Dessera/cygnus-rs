@@ -30,12 +30,7 @@
         };
       };
       perSystem =
-        {
-          config,
-          pkgs,
-          system,
-          ...
-        }:
+        { pkgs, system, ... }:
         let
           craneLibDefault = (crane.mkLib pkgs).overrideToolchain (
             import ./nix/toolchain { inherit fenix system; }
@@ -49,7 +44,7 @@
             src = craneLibDefault.cleanCargoSource ./.;
             strictDeps = true;
           };
-          packages.windows = pkgs.callPackage ./nix/packages/x86_64-windows-gnu.nix {
+          packages.x86_64-windows-gnu = pkgs.callPackage ./nix/packages/x86_64-windows-gnu.nix {
             craneLib = craneLibCross;
             craneSrc = ./.;
             # pkgsCross = pkg;
@@ -68,7 +63,7 @@
               craneSrc = ./.;
             };
           packages.x86_64-linux-musl = pkgs.callPackage ./nix/packages/x86_64-linux-musl.nix {
-            craneLib = craneLibDefault;
+            craneLib = craneLibCross;
             craneSrc = ./.;
           };
 
