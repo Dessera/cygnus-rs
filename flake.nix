@@ -47,21 +47,7 @@
           packages.x86_64-windows-gnu = pkgs.callPackage ./nix/packages/x86_64-windows-gnu.nix {
             craneLib = craneLibCross;
             craneSrc = ./.;
-            # pkgsCross = pkg;
-            # openssl = pkgs.openssl;
           };
-          packages.aarch64-linux-gnu =
-            let
-              crossPkgs = import nixpkgs {
-                crossSystem = "aarch64-linux";
-                localSystem = system;
-              };
-            in
-            crossPkgs.callPackage ./nix/packages/aarch64-linux-gnu.nix {
-              stdenv = crossPkgs.stdenv;
-              craneLib = craneLibCross;
-              craneSrc = ./.;
-            };
           packages.x86_64-linux-musl = pkgs.callPackage ./nix/packages/x86_64-linux-musl.nix {
             craneLib = craneLibCross;
             craneSrc = ./.;

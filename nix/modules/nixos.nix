@@ -36,10 +36,16 @@ in
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${cygnus-rs}/bin/cygnus auth -f ${cfg.userFile}";
-        Restart = "always";
+        # ExecStart = "${cygnus-rs}/bin/cygnus auth -f ${cfg.userFile}";
+        Restart = "on-failure";
         RestartSec = 5;
       };
+
+      script = ''
+        if [[ -r ${cfg.userFile} ]]; then
+          ${cygnus-rs}/bin/cygnus auth -f ${cfg.userFile}
+        fi
+      '';
     };
   };
 }
